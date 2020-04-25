@@ -4,3 +4,6 @@ redis==3.4.1
 attrs==19.3.0
 environs==7.4.0
 prometheus_client==0.7.1
+tldextract==2.2.2
+
+pytest==5.4.1
