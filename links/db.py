@@ -2,9 +2,10 @@ from abc import ABC, abstractmethod
 from typing import List
 
 from links.models import Link
+from .exceptions import LinksException
 
 
-class LinksRepositoryError(Exception):
+class LinksRepositoryError(LinksException):
     pass
 
 

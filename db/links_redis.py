@@ -1,3 +1,4 @@
+import zlib
 from typing import List
 
 import attr
@@ -7,23 +8,27 @@ from links import (LinksRepository,
                    Link,
                    LinksRepositoryError)
 
+_LINK_INFO = lambda k: f'link:{k}:info'
+_LINKS_TIMESERIES = 'link:timeseries'
+
 
 @attr.s(slots=True)
 class RedisLinksRepository(LinksRepository):
     _redis_client = attr.ib()
-    _in_pipeline: bool = attr.ib(kw_only=True,
-                                 default=False)
+    _pipeline = attr.ib(init=False, default=None)
 
     @classmethod
     def from_params(cls, host, port, pwd):
         redis_client = redis.Redis(host=host,
                                    port=port,
-                                   password=pwd)
+                                   password=pwd,
+                                   decode_responses=True)
         return cls(redis_client)
 
     @staticmethod
     def _link_key(link: Link) -> str:
-        return f'{hash(link.url)}:{link.visit_dt.timestamp()}'
+        digest = zlib.crc32(link.url.encode())
+        return f'{digest}:{link.visit_dt.timestamp()}'
 
     @staticmethod
     def _serialize_link(link: Link) -> dict:
@@ -38,34 +43,31 @@ class RedisLinksRepository(LinksRepository):
             info['url'],
             float(info['ts']))
 
-    _LINK_INFO = lambda k: f'link:{k}:info'
-    _LINKS_TIMESERIES = 'link:timeseries'
-
     def save_link(self, link: Link):
         key = RedisLinksRepository._link_key(link)
-        self._redis_client.hmset(
-            self._LINK_INFO(key),
+        self._client.hmset(
+            _LINK_INFO(key),
             self._serialize_link(link)
         )
-        self._redis_client.zadd(
-            self._LINKS_TIMESERIES,
+        self._client.zadd(
+            _LINKS_TIMESERIES,
             {key: link.visit_ts}
         )
 
     def visited_links(self, from_ts: float, to_ts: float) -> List[Link]:
-        if self._in_pipeline:
+        if self._pipeline:
             raise LinksRepositoryError(
                 'Attempt to fetch link in session')
 
         keys = self._redis_client.zrangebyscore(
-            self._LINKS_TIMESERIES,
+            _LINKS_TIMESERIES,
             from_ts,
             to_ts
         )
 
         pipe = self._redis_client.pipeline()
         for key in keys:
-            pipe.hgetall(self._LINK_INFO(key))
+            pipe.hgetall(_LINK_INFO(key))
         links_data = pipe.execute()
 
         return [
@@ -74,13 +76,20 @@ class RedisLinksRepository(LinksRepository):
         ]
 
     def __enter__(self):
-        if self._in_pipeline:
+        if self._pipeline:
             raise LinksRepositoryError(
                 'The links repository is already in session')
 
-        pipe = self._redis_client.pipeline()
-        return RedisLinksRepository(pipe, in_pipeline=True)
+        self._pipeline = self._redis_client.pipeline()
+        return self
 
     def __exit__(self, exc_type, exc_val, exc_tb):
-        if self._in_pipeline:
-            self._redis_client.execute()
+        if self._pipeline:
+            self._pipeline.execute()
+            self._pipeline = None
+
+    @property
+    def _client(self):
+        if self._pipeline:
+            return self._pipeline
+        return self._redis_client

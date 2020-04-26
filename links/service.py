@@ -1,5 +1,5 @@
 import logging
-from typing import List
+from typing import Set, List
 
 import attr
 
@@ -9,24 +9,14 @@ from .models import Link, IncorrectUrl
 
 
 @attr.s(slots=True, frozen=True)
-class Status:
-    status: str = attr.ib(default='ok')
-
-
-@attr.s(slots=True, frozen=True)
-class Error(Status):
-    status: str = attr.ib(default='error')
-    message: str = attr.ib(default=None)
-
-
-@attr.s(slots=True, frozen=True)
-class Domains(Status):
-    domains: List[str] = attr.ib(factory=list)
+class Domains:
+    domains: Set[str] = attr.ib(factory=set,
+                                converter=set)
 
     @classmethod
     def from_links(cls, links: List[Link]):
-        return cls(domains=[link.domain
-                            for link in links])
+        return cls(domains={link.domain
+                            for link in links})
 
 
 class LinksService:
@@ -34,22 +24,21 @@ class LinksService:
         self._repository = repository
         self._logger = logging.getLogger(__name__)
 
-    def visit(self, links: List[Link]) -> Status:
+    def visit(self, links: List[Link]):
         try:
-            domains = [link.domain for link in links]
-        except IncorrectUrl as err:
+            for link in links:
+                link.domain
+        except IncorrectUrl:
             self._logger.exception('Could not save visits links')
-            return Error(message=str(err))
+            raise
 
         try:
             with self._repository as session:
                 for link in links:
                     session.save_link(link)
-        except LinksRepositoryError as err:
+        except LinksRepositoryError:
             self._logger.exception('Could not save visits links')
-            return Error(message=str(err))
-
-        return Status()
+            raise
 
     def visited_domains(self, from_ts: float, to_ts: float) -> Domains:
         if not from_ts or not to_ts:
