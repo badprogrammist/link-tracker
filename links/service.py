@@ -51,7 +51,7 @@ class LinksService:
 
         return Status()
 
-    def visited_domains(self, from_ts: int, to_ts: int) -> Domains:
+    def visited_domains(self, from_ts: float, to_ts: float) -> Domains:
         if not from_ts or not to_ts:
             raise InvalidInputData('Time delta is incorrect')
 

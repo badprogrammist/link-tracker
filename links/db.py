@@ -17,7 +17,9 @@ class LinksRepository(ABC):
         pass
 
     @abstractmethod
-    def visited_links(self, from_ts: int, to_ts: int) -> List[Link]:
+    def visited_links(self,
+                      from_ts: float,
+                      to_ts: float) -> List[Link]:
         pass
 
     @abstractmethod
@@ -26,4 +28,4 @@ class LinksRepository(ABC):
 
     @abstractmethod
     def __exit__(self, exc_type, exc_val, exc_tb):
-        pass
+        return None

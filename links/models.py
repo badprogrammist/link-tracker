@@ -22,7 +22,7 @@ class Link:
             raise IncorrectUrl('Url is null or empty')
 
     @classmethod
-    def from_ts(cls, url: str, ts: int):
+    def from_ts(cls, url: str, ts: float):
         return cls(
             url,
             visit_dt=datetime.fromtimestamp(ts)
@@ -36,3 +36,7 @@ class Link:
             raise IncorrectUrl(f'Url "{self.url}" is incorrect')
 
         return f'{result.domain}.{result.suffix}'
+
+    @property
+    def visit_ts(self):
+        return self.visit_dt.timestamp()
