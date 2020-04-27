@@ -21,10 +21,18 @@ def _handle_links_error(ex):
             Statuses.INTERNAL_ERROR)
 
 
-def arg(name):
+def arg(name, cast_type=None):
     if name not in request.args:
         raise BadRequest(f'"{name}" argument is required')
-    return request.args[name]
+    value = request.args[name]
+
+    if cast_type:
+        try:
+            value = cast_type(value)
+        except TypeError:
+            raise BadRequest(f'"{name}" argument is incorrect')
+
+    return value
 
 
 @bp.route('/visited_links', methods=['POST'])
@@ -41,8 +49,8 @@ def visit():
 
 @bp.route('/visited_domains', methods=['GET'])
 def visited_domains():
-    _from = arg('from')
-    _to = arg('to')
+    _from = arg('from', cast_type=float)
+    _to = arg('to', cast_type=float)
 
     domains = app_ctx.links.visited_domains(_from, _to)
 
