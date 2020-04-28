@@ -41,7 +41,7 @@ class LinksService:
             raise
 
     def visited_domains(self, from_ts: float, to_ts: float) -> Domains:
-        if not from_ts or not to_ts:
+        if from_ts is None or to_ts is None:
             raise InvalidInputData('Time delta is incorrect')
 
         links = self._repository.visited_links(from_ts, to_ts)

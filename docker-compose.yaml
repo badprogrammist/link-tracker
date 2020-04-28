@@ -1,0 +1,11 @@
+version: '3'
+services:
+  redis-server:
+    image: 'redis'
+  linktracker-app:
+    build: .
+    ports:
+      - '8000:8000'
+    environment:
+      - 'REDIS_HOST=redis-server'
+    restart: always

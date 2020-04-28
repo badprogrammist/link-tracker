@@ -1,0 +1,12 @@
+version: '3'
+services:
+  redis-server:
+    image: 'redis'
+  linktracker-app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    environment:
+      - 'REDIS_HOST=redis-server'
+      - 'TEST_IN_MEMORY_LINKS_REPOSITORY=False'
+    command: python -m pytest tests/
