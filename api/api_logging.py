@@ -1,3 +1,6 @@
+"""
+Api logging settings
+"""
 import logging
 
 from flask import request
@@ -20,6 +23,11 @@ logger.propagate = False
 
 
 def log(response):
+    """
+    Log response
+    :param response: Flask Response
+    :return: None
+    """
     status_code = response.status_code
     content_length = response.content_length
 

@@ -1,3 +1,6 @@
+"""
+Json validation
+"""
 import functools
 import json
 import os
@@ -10,11 +13,23 @@ from .exceptions import BadRequest
 
 
 class ApiDataValidator:
+    """
+    Validates json by given schema
+    """
+
     def __init__(self, schemas_path):
+        """
+        :param schemas_path: root dir of schemas
+        """
         self.schemas_path = schemas_path
         self._cache = dict()
 
     def get_schema(self, name):
+        """
+        Get validation schema
+        :param name: name of file
+        :return: schema as dict
+        """
         if name not in self._cache:
             path = os.path.join(self.schemas_path,
                                 f'{name}.json')
@@ -25,6 +40,12 @@ class ApiDataValidator:
         return self._cache[name]
 
     def validate(self, data, schema_name):
+        """
+        Validates json data by given schema
+        :param data: json
+        :param schema_name: filename
+        :return: None
+        """
         schema = self.get_schema(schema_name)
         try:
             jsonschema.validate(data, schema)
@@ -38,6 +59,11 @@ class ValidationError(BadRequest):
 
 
 def validate(schema_name):
+    """
+    Decorator for applying validation
+    :param schema_name: filename of schema
+    """
+
     def wrapper(func):
         @functools.wraps(func)
         def decorated(*args, **kwargs):

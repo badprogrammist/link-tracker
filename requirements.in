@@ -8,3 +8,4 @@ tldextract==2.2.2
 jsonschema==3.2.0
 
 pytest==5.4.1
+pylint==2.5.0

@@ -1,3 +1,6 @@
+"""
+Application starting point
+"""
 import os
 
 import api
@@ -8,6 +11,10 @@ from context import init_context, app_ctx
 
 
 def init_services():
+    """
+    Create all services
+    :return: None
+    """
     links_repo = db.RedisLinksRepository.from_params(
         settings.REDIS_HOST,
         settings.REDIS_PORT,
@@ -20,6 +27,9 @@ def init_services():
 
 
 def before_first_request():
+    """
+    Before first request callback
+    """
     init_context()
     init_services()
 

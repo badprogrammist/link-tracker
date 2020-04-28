@@ -99,3 +99,9 @@ curl --location --request POST 'localhost:8000/api/v1/linktracker/visited_links'
 
 curl --location --request GET 'localhost:8000/api/v1/linktracker/visited_domains?from=0&to=1588088486.324779'
 ```
+
+# Linters
+
+```
+$pylint api db links context.py main.py settings.py
+```

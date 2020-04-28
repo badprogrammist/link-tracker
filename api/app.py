@@ -1,9 +1,12 @@
+"""
+Building Flask app
+"""
 from flask import Flask, request
 
 from .api_logging import logger, log
 from .exceptions import BadRequest
-from .statuses import error_response, Statuses
 from .links_api import bp as links_bp
+from .statuses import error_response, Statuses
 
 ALLOWED_REQUEST_TYPES = {
     'POST'
@@ -15,6 +18,10 @@ ALLOWED_REQUEST_CONTENT_TYPES = {
 
 
 def check_request_content_type():
+    """
+    Check content-type of request
+    :return: None
+    """
     if (request.method in ALLOWED_REQUEST_TYPES
             and request.mimetype not in ALLOWED_REQUEST_CONTENT_TYPES
             and request.data != ''):
@@ -22,15 +29,29 @@ def check_request_content_type():
 
 
 def before_request():
+    """
+    Before each request callback
+    """
     check_request_content_type()
 
 
 def after_request(response):
+    """
+    After each request callback
+    :param response: Flask Response object
+    :return: Flask Response object
+    """
     log(response)
     return response
 
 
 def create_app(before_first_request=None, teardown_appcontext=None):
+    """
+    Build Flask app object
+    :param before_first_request: Before first request callback
+    :param teardown_appcontext: Teardown app callback
+    :return: Flask app object
+    """
     flask_app = Flask(__name__)
 
     @flask_app.route('/api/v1/linktracker/healthz')
