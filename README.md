@@ -1,3 +1,5 @@
+[![Build Status](https://travis-ci.org/badprogrammist/link-tracker.svg?branch=master)](https://travis-ci.org/badprogrammist/link-tracker)
+
 # API
 
 ## `POST /api/v1/linktracker/visited_links`
